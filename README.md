@@ -154,11 +154,11 @@ This work incorporates many open-source codes. We extend our gratitude to the au
 If you found this code/work to be useful in your own research, please considering citing the following:
 
 ```bibtex
-@inproceedings{Matsuki:Murai:etal:CVPR2024,
-  title={{G}aussian {S}platting {SLAM}},
-  author={Hidenobu Matsuki and Riku Murai and Paul H. J. Kelly and Andrew J. Davison},
+@inproceedings{4DTAM,
+  title={4DTAM: Non-Rigid Tracking and Mapping via Dynamic Surface Gaussians},
+  author={Matsuki, Hidenobu and Bae, Gwangbin and Davison, Andrew},
   booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
-  year={2024}
+  year={2025}
 }
 
 ```
