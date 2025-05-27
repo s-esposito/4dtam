@@ -1,0 +1,4 @@
+inherit_from: "configs/sim4d/base_config.yaml"
+
+Dataset:
+  dataset_path: "datasets/sim4d/wave_toy/train"

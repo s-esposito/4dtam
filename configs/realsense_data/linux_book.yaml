@@ -1,0 +1,4 @@
+inherit_from: "configs/realsense_data/base_config.yaml"
+
+Dataset:
+  dataset_path: "datasets/realsense_data/linux_book/train"
