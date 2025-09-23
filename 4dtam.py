@@ -199,8 +199,13 @@ if __name__ == "__main__":
     parser.add_argument("--eval", action="store_true")
     parser.add_argument("--dataset", type=str)
     parser.add_argument("--nogui", action="store_false")
+    parser.add_argument('--datasets_dir', type=str, help='path to datasets directory', default='datasets/', required=False)
 
     args = parser.parse_args(sys.argv[1:])
+    
+    print(args)
+    
+    exit(0)
 
     mp.set_start_method("spawn")
 
