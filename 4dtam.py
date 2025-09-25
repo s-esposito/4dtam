@@ -23,6 +23,7 @@ from utils.multiprocessing_utils import FakeQueue
 from utils.slam_backend import BackEnd
 from utils.slam_frontend import FrontEnd
 from utils.multiprocessing_utils import clone_obj
+from utils.eval_utils import eval_rendering
 
 
 class SLAM:
@@ -140,6 +141,7 @@ class SLAM:
             )
 
         if self.eval_rendering:
+            
             self.gaussians = self.frontend.gaussians
             self.warpfield_statedict = (
                 clone_obj(self.frontend.warpfield_statedict)
@@ -179,6 +181,18 @@ class SLAM:
                     self.warpfield_statedict,
                     os.path.join(self.save_dir, "warpfield_after.pth"),
                 )
+                
+            # TODO: render all sequence from cameras
+            renders_eval = eval_rendering(
+                self.frontend.cameras,
+                self.gaussians,
+                self.dataset,
+                self.save_dir,
+                self.pipeline_params,
+                self.background,
+                self.frontend.kf_indices,
+                iteration="final",
+            )
 
         backend_queue.put(["stop"])
         backend_process.join()
@@ -199,13 +213,11 @@ if __name__ == "__main__":
     parser.add_argument("--eval", action="store_true")
     parser.add_argument("--dataset", type=str)
     parser.add_argument("--nogui", action="store_false")
-    parser.add_argument('--datasets_dir', type=str, help='path to datasets directory', default='datasets/', required=False)
+    # parser.add_argument('--datasets_dir', type=str, help='path to datasets directory', default='datasets/', required=False)
 
     args = parser.parse_args(sys.argv[1:])
     
     print(args)
-    
-    exit(0)
 
     mp.set_start_method("spawn")
 
@@ -231,8 +243,8 @@ if __name__ == "__main__":
         config["Results"]["use_gui"] = False
         Log("\teval_rendering=True")
         config["Results"]["eval_rendering"] = True
-        Log("\tuse_wandb=True")
-        config["Results"]["use_wandb"] = True
+        # Log("\tuse_wandb=True")
+        # config["Results"]["use_wandb"] = True
 
     if config["Results"]["save_results"]:
         mkdir_p(config["Results"]["save_dir"])
@@ -262,6 +274,11 @@ if __name__ == "__main__":
 
     slam.run()
     wandb.finish()
+    
+    from tools.eval import evaluate
+    
+    results_path = save_dir
+    evaluate(save_dir, dataset_path=args.dataset)
 
     # All done
     Log("Done.")

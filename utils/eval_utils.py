@@ -1,6 +1,6 @@
 import json
 import os
-
+import copy
 import cv2
 import evo
 import numpy as np
@@ -22,9 +22,12 @@ def evaluate_evo(poses_gt, poses_est, plot_dir, label, monocular=False):
     ## Plot
     traj_ref = PosePath3D(poses_se3=poses_gt)
     traj_est = PosePath3D(poses_se3=poses_est)
-    traj_est_aligned = trajectory.align_trajectory(
-        traj_est, traj_ref, correct_scale=monocular
-    )
+    
+    traj_est_aligned = copy.deepcopy(traj_est)
+    traj_est_aligned.align(traj_ref, correct_scale=monocular, correct_only_scale=False)
+    # traj_est_aligned = trajectory.align_trajectory(
+    #     traj_est, traj_ref, correct_scale=monocular
+    # )
 
     ## RMSE
     pose_relation = metrics.PoseRelation.translation_part
@@ -42,21 +45,21 @@ def evaluate_evo(poses_gt, poses_est, plot_dir, label, monocular=False):
     ) as f:
         json.dump(ape_stats, f, indent=4)
 
-    plot_mode = evo.tools.plot.PlotMode.xy
-    fig = plt.figure()
-    ax = evo.tools.plot.prepare_axis(fig, plot_mode)
-    ax.set_title(f"ATE RMSE: {ape_stat}")
-    evo.tools.plot.traj(ax, plot_mode, traj_ref, "--", "gray", "gt")
-    evo.tools.plot.traj_colormap(
-        ax,
-        traj_est_aligned,
-        ape_metric.error,
-        plot_mode,
-        min_map=ape_stats["min"],
-        max_map=ape_stats["max"],
-    )
-    ax.legend()
-    plt.savefig(os.path.join(plot_dir, "evo_2dplot_{}.png".format(str(label))), dpi=90)
+    # plot_mode = evo.tools.plot.PlotMode.xy
+    # fig = plt.figure()
+    # ax = evo.tools.plot.prepare_axis(fig, plot_mode)
+    # ax.set_title(f"ATE RMSE: {ape_stat}")
+    # evo.tools.plot.traj(ax, plot_mode, traj_ref, "--", "gray", "gt")
+    # evo.tools.plot.traj_colormap(
+    #     ax,
+    #     traj_est_aligned,
+    #     ape_metric.error,
+    #     plot_mode,
+    #     min_map=ape_stats["min"],
+    #     max_map=ape_stats["max"],
+    # )
+    # ax.legend()
+    # plt.savefig(os.path.join(plot_dir, "evo_2dplot_{}.png".format(str(label))), dpi=90)
 
     return ape_stat
 
@@ -126,7 +129,7 @@ def eval_rendering(
         net_type="alex", normalize=True
     ).to("cuda")
     print("kf_indices", kf_indices)
-    return
+    # return
     for idx in range(0, end_idx, interval):
         # if idx in kf_indices:
         #     continue
@@ -135,7 +138,14 @@ def eval_rendering(
         data = dataset[idx]
         gt_image = data[0]
 
-        rendering = render(frame, gaussians, pipe, background)["render"]
+        rendering = render(
+            viewpoint_camera=frame,
+            pc=gaussians,
+            pipe=pipe,
+            bg_color=background
+        )
+        assert rendering is not None, "Rendering failed!"
+        rendering = rendering["render"]
         image = torch.clamp(rendering, 0.0, 1.0)
 
         gt = (gt_image.cpu().numpy().transpose((1, 2, 0)) * 255).astype(np.uint8)
